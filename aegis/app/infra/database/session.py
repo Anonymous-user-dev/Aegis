@@ -1,9 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/aegis"
+from app.core.config import settings
 
 engine = create_async_engine(
-    DATABASE_URL,
+    settings.DATABASE_URL,
     echo=True
 )
 
