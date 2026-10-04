@@ -7,19 +7,15 @@ from app.infra.repository.execution_repository import ExecutionRepository
 
 
 @pytest.mark.asyncio
-async def test_add_and_get_execution():
+async def test_add_and_get_execution(session):
     execution = Execution.create()
 
-    async with TestSessionFactory() as session:
-        repository = ExecutionRepository(session)
+    repository = ExecutionRepository(session)
 
-        repository.add(execution)
-        await session.commit()
+    repository.add(execution)
+    await session.commit()
 
-    async with TestSessionFactory() as session:
-        repository = ExecutionRepository(session)
-
-        loaded = await repository.get_by_id(execution.execution_id)
+    loaded = await repository.get_by_id(execution.execution_id)
 
     assert loaded is not None
     assert loaded.execution_id == execution.execution_id
