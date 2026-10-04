@@ -64,12 +64,3 @@ class Execution:
         self.status = ExecutionStatus.FAILED
         self.updated_at = datetime.now(timezone.utc)
 
-execution = Execution.create()
-
-print(execution.created_at)
-print(execution.updated_at)
-
-execution.succeed("done")
-
-print(execution.created_at)
-print(execution.updated_at)
