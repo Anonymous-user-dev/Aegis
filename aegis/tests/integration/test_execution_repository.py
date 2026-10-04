@@ -13,7 +13,7 @@ async def test_add_and_get_execution(session):
     repository = ExecutionRepository(session)
 
     repository.add(execution)
-    await session.commit()
+    await session.flush()
 
     loaded = await repository.get_by_id(execution.execution_id)
 
@@ -24,12 +24,11 @@ async def test_add_and_get_execution(session):
     assert loaded.error is None
 
 @pytest.mark.asyncio
-async def test_get_missing_execution_returns_none():
+async def test_get_missing_execution_returns_none(session):
     random_id = uuid.uuid4()
 
-    async with TestSessionFactory() as session:
-        repository = ExecutionRepository(session)
+    repository = ExecutionRepository(session)
 
-        loaded = await repository.get_by_id(random_id)
+    loaded = await repository.get_by_id(random_id)
 
     assert loaded is None

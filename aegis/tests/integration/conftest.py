@@ -16,5 +16,14 @@ TestSessionFactory = async_sessionmaker(
 
 @pytest_asyncio.fixture
 async def session():
-    async with TestSessionFactory() as session:
-        yield session
+    async with test_engine.connect() as connection:
+        transaction = await connection.begin()
+
+        Session = async_sessionmaker(
+            bind=connection,
+            expire_on_commit=False
+        )
+        async with Session() as session:
+            yield session
+
+        await transaction.rollback()
