@@ -1,0 +1,39 @@
+import pytest
+import uuid
+
+from app.domain.execution import Execution, ExecutionStatus
+from app.infra.database.session import SessionFactory
+from app.infra.repository.execution_repository import ExecutionRepository
+
+
+@pytest.mark.asyncio
+async def test_add_and_get_execution():
+    execution = Execution.create()
+
+    async with SessionFactory() as session:
+        repository = ExecutionRepository(session)
+
+        repository.add(execution)
+        await session.commit()
+
+    async with SessionFactory() as session:
+        repository = ExecutionRepository(session)
+
+        loaded = await repository.get_by_id(execution.execution_id)
+
+    assert loaded is not None
+    assert loaded.execution_id == execution.execution_id
+    assert loaded.status == ExecutionStatus.PENDING
+    assert loaded.result is None
+    assert loaded.error is None
+
+@pytest.mark.asyncio
+async def test_get_missing_execution_returns_none():
+    random_id = uuid.uuid4()
+
+    async with SessionFactory() as session:
+        repository = ExecutionRepository(session)
+
+        loaded = await repository.get_by_id(random_id)
+
+    assert loaded is None

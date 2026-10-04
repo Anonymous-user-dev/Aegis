@@ -2,7 +2,7 @@ import asyncio
 
 from app.domain.execution import Execution
 from app.infra.database.session import SessionFactory
-from aegis.app.infra.repository.execution_repository import ExecutionRepository
+from app.infra.repository.execution_repository import ExecutionRepository
 
 async def main():
     execution = Execution.create()
