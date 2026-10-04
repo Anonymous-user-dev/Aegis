@@ -5,6 +5,8 @@ def execution_to_model(execution: Execution) -> ExecutionModel:
     return ExecutionModel(
         execution_id=execution.execution_id,
         status=execution.status,
+        task=execution.task,
+        tenant_id=execution.tenant_id,
         result=execution.result,
         error=execution.error,
         created_at=execution.created_at,
@@ -15,6 +17,8 @@ def execution_to_domain(model: ExecutionModel) -> Execution:
     return Execution(
         execution_id=model.execution_id,
         status=model.status,
+        task=model.task,
+        tenant_id=model.tenant_id,
         result=model.result,
         error=model.error,
         created_at=model.created_at,

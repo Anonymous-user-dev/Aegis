@@ -11,20 +11,24 @@ class ExecutionStatus(Enum):
     FAILED = "failed"
 
 class Execution:
-    def __init__(self, execution_id, status, result, error, created_at, updated_at):
+    def __init__(self, execution_id, status, task, tenant_id, result, error, created_at, updated_at):
         self.execution_id = execution_id
         self.status = status
+        self.task = task
+        self.tenant_id = tenant_id
         self.result = result
         self.error = error
         self.created_at = created_at
         self.updated_at = updated_at
 
     @classmethod
-    def create(cls):
+    def create(cls, tenant_id, task):
         now = datetime.now(timezone.utc)
         return cls(
             execution_id=uuid.uuid4(),
             status=ExecutionStatus.PENDING,
+            tenant_id=tenant_id,
+            task=task,
             result=None,
             error=None,
             created_at=now,
