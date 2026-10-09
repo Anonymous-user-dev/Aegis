@@ -11,7 +11,7 @@ from app.infra.database.base import Base
 class ExecutionModel(Base):
     __tablename__ = "executions"
     execution_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    status: Mapped[ExecutionStatus] = mapped_column(Enum(ExecutionStatus), nullable=False)
+    status: Mapped[ExecutionStatus] = mapped_column(Enum(ExecutionStatus, values_callable=lambda enum_cls: [member.value for member in enum_cls], name="execution_status",), nullable=False)
     tenant_id: Mapped[str] = mapped_column(String, nullable=False)
     task: Mapped[str] = mapped_column(String, nullable=False)
     result: Mapped[str | None] = mapped_column(String, nullable=True)
