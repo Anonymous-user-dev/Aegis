@@ -4,10 +4,7 @@ from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest
 from app.api.dependencies import get_session
 from app.infra.repository.execution_repository import ExecutionRepository
 from app.application.create_execution import CreateExecution, CreateExecutionCommand
-router = APIRouter(
-    prefix="/v1/executions",
-    tags=["executions"]
-)
+router = APIRouter()
 
 @router.post("", response_model=ExecutionResponse, status_code=status.HTTP_201_CREATED)
 async def create_execution(request: CreateExecutionRequest, session: AsyncSession = Depends(get_session)):
