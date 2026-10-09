@@ -16,4 +16,4 @@ class ExecutionResponse(BaseModel):
     result: str | None
     error: str | None   
     created_at: datetime
-    uploaded_at: datetime
+    updated_at: datetime
