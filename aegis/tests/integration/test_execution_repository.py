@@ -8,7 +8,7 @@ from app.infra.repository.execution_repository import ExecutionRepository
 
 @pytest.mark.asyncio
 async def test_add_and_get_execution(session):
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
 
     repository = ExecutionRepository(session)
 

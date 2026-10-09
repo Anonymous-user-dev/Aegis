@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -9,10 +10,18 @@ from app.core.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+
 config = context.config
-migration_url = settings.DATABASE_URL.replace(
-        "postgresql+asyncpg",
-        "postgresql+psycopg"
+
+
+database_url = os.getenv(
+    "ALEMBIC_DATABASE_URL",
+    settings.DATABASE_URL,
+)
+
+migration_url = database_url.replace(
+    "postgresql+asyncpg",
+    "postgresql+psycopg",
 )
 
 config.set_main_option(

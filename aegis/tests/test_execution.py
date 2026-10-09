@@ -2,7 +2,7 @@ import pytest
 from app.domain.execution import Execution, ExecutionStatus, InvalidExecutionTransition
 
 def test_create_execution():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
 
     assert execution.status == ExecutionStatus.PENDING
     assert execution.result is None
@@ -12,7 +12,7 @@ def test_create_execution():
 
 
 def test_execution_success():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
     old_updated_at = execution.updated_at
     execution.succeed("done")
     assert execution.status == ExecutionStatus.SUCCEEDED
@@ -21,7 +21,7 @@ def test_execution_success():
     assert execution.updated_at >= old_updated_at
 
 def test_execution_can_fail():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
 
     execution.fail("timeout")
 
@@ -30,20 +30,20 @@ def test_execution_can_fail():
     assert execution.result is None
 
 def test_succeeded_execution_cannot_fail():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
     execution.succeed("done")
 
     with pytest.raises(InvalidExecutionTransition):
         execution.fail("timeout")
 
 def test_success_requires_result():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
 
     with pytest.raises(ValueError):
         execution.succeed(None)
 
 def test_failure_requires_error():
-    execution = Execution.create()
+    execution = Execution.create(tenant_id="random", task="random2")
 
     with pytest.raises(ValueError):
         execution.fail(None)
