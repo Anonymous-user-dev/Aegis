@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.domain.execution import ExecutionStatus
 
-class ExecutionCommandRequest(BaseModel):
+class CreateExecutionRequest(BaseModel):
     tenant_id: str
     task: str
 
