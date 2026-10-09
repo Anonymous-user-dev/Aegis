@@ -24,4 +24,14 @@ async def create_execution(request: ExecutionCommandRequest, session: AsyncSessi
 
     await session.commit()
 
+    return ExecutionResponse(
+    execution_id=execution.execution_id,
+    tenant_id=execution.tenant_id,
+    task=execution.task,
+    status=execution.status,
+    result=execution.result,
+    error=execution.error,
+    created_at=execution.created_at,
+    updated_at=execution.updated_at)
+
 
