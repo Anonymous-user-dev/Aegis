@@ -2,7 +2,6 @@ import pytest
 import uuid
 
 from app.domain.execution import Execution, ExecutionStatus
-from tests.integration.conftest import TestSessionFactory
 from app.infra.repository.execution_repository import ExecutionRepository
 
 

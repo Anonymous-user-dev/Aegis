@@ -2,6 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
+import uuid
 
 
 @pytest.mark.asyncio
@@ -26,17 +27,30 @@ async def test_create_execution_api(client):
 
 @pytest.mark.asyncio
 async def test_get_existing_execution(client):
-    response = await client.post(
+    create_response = await client.post(
         "/api/v1/executions/",
         json={
-            "tenant-id": "tenant-0",
+            "tenant_id": "tenant-0",
             "task": "Make a summary",
         },
     )
-    execution_id = response.execution_id
 
-    request = await client.get(
+    created_body = create_response.json()
+
+    execution_id = created_body["execution_id"]
+
+    response = await client.get(
         f"/api/v1/executions/{execution_id}"
     )
 
-    assert request.status_code == 200
+    assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_get_nonexisting_execution(client):
+    execution_id = uuid.uuid4()
+
+    response = await client.get(
+        f"/api/v1/executions/{execution_id}"
+    )
+
+    assert response.status_code == 404
