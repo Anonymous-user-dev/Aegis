@@ -4,7 +4,7 @@ from uuid import UUID
 
 from app.domain.execution import Execution
 from app.infra.database.mappers import execution_to_domain, execution_to_model
-from app.infra.database.models import ExecutionModel
+from app.infra.database.models import ExecutionModel, ExecutionStatus
 
 
 class ExecutionRepository:
@@ -28,5 +28,24 @@ class ExecutionRepository:
             return None
 
         return execution_to_domain(model)
+
+    async def list(self, limit: int, offset: int, status: ExecutionStatus | None = None) -> list[ExecutionModel]:
+        stmt = select(ExecutionModel)
+
+        if status is not None:
+            stmt = stmt.where(status == ExecutionModel.status)
+
+        stmt = stmt.limit(limit).offset(offset).order_by(ExecutionModel.created_at.desc(),
+                                                         ExecutionModel.execution_id.desc())
+
+        execute = await self.session.execute(stmt)
+
+        models = execute.scalars().all()
+
+        return [
+            execution_to_domain(model)
+            for model in models
+        ]
+
     
 
