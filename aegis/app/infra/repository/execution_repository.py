@@ -46,6 +46,18 @@ class ExecutionRepository:
             execution_to_domain(model)
             for model in models
         ]
+    async def update(self, execution: Execution) -> None:
+        stmt = select(ExecutionModel).where(ExecutionModel.execution_id == execution.execution_id)
 
-    
+        result = await self.session.execute(stmt)
+
+        model = result.scalar_one_or_none()
+
+        if model is None:
+            return
+
+        model.status = execution.status
+        model.result = execution.result
+        model.error = execution.error
+        model.updated_at = execution.updated_at
 
