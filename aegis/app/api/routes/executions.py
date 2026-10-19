@@ -1,12 +1,16 @@
 from fastapi import APIRouter,status, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest
+from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest, SucceedExecutionRequest, FailedExecutionRequest
 from app.api.dependencies import get_session
 from uuid import UUID
-from app.domain.execution import ExecutionStatus, Execution
+from app.domain.execution import ExecutionStatus, Execution, InvalidExecutionTransition
 from app.infra.repository.execution_repository import ExecutionRepository
 from app.application.create_execution import CreateExecution, CreateExecutionCommand
+from app.application.succeed_execution import ExecutionNotFound, SucceedExecution, SucceedExecutionCommand
+from app.application.fail_execution import ExecutionFail, ExecutionFailCommand
 router = APIRouter()
+
+
 
 @router.post("/", response_model=ExecutionResponse, status_code=status.HTTP_201_CREATED)
 async def create_execution(request: CreateExecutionRequest, session: AsyncSession = Depends(get_session)):
@@ -77,3 +81,67 @@ async def get_all_executions(session: AsyncSession = Depends(get_session), execu
     ]
 
     return responses
+
+@router.post("/{execution_id}/succeed", response_model=ExecutionResponse, status_code=status.HTTP_200_OK)
+async def execution_succeeded(execution_id: UUID, request: SucceedExecutionRequest, session: AsyncSession = Depends(get_session)) -> ExecutionResponse:
+    repository = ExecutionRepository(session)
+
+    use_case = SucceedExecution(repository)
+
+    command = SucceedExecutionCommand(
+        execution_id=execution_id,
+        result=request.result)
+
+    try:
+        execution = await use_case.execute(command)
+
+    except ExecutionNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Execution not found")
+
+    except InvalidExecutionTransition as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc))
+
+    await session.commit()
+
+    return ExecutionResponse(
+        execution_id=execution.execution_id,
+        tenant_id=execution.tenant_id,
+        task=execution.task,
+        status=execution.status,
+        result=execution.result,
+        error=execution.error,
+        created_at=execution.created_at,
+        updated_at=execution.updated_at,
+    ) 
+
+@router.post("/{execution_id}/fail", response_model=ExecutionResponse, status_code=status.HTTP_200_OK)
+async def execution_fail(execution_id: UUID, request: FailedExecutionRequest, session: AsyncSession = Depends(get_session)) -> ExecutionResponse:
+    repository = ExecutionRepository(session)
+    use_case = ExecutionFail(repository)
+    command = ExecutionFailCommand(execution_id, request.error)
+
+    try:
+        execution = await use_case.execute(command)
+
+    except ExecutionNotFound:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Execution not found")
+
+    except InvalidExecutionTransition as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+    await session.commit()
+
+    return ExecutionResponse(
+        execution_id=execution.execution_id,
+        tenant_id=execution.tenant_id,
+        task=execution.task,
+        status=execution.status,
+        result=execution.result,
+        error=execution.error,
+        created_at=execution.created_at,
+        updated_at=execution.updated_at,
+    ) 

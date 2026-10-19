@@ -4,6 +4,12 @@ from datetime import datetime
 
 from app.domain.execution import ExecutionStatus
 
+class SucceedExecutionRequest(BaseModel):
+    result: str
+
+class FailedExecutionRequest(BaseModel):
+    error: str
+
 class CreateExecutionRequest(BaseModel):
     tenant_id: str
     task: str
