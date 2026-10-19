@@ -15,7 +15,7 @@ class SucceedExecution:
     def __init__(self, repository: ExecutionRepository):
         self.repository = repository
 
-    async def execute(self, command: SucceedExecutionCommand):
+    async def execute(self, command: SucceedExecutionCommand) -> Execution:
         execution = await self.repository.get_by_id(command.execution_id)
 
         if not execution:
