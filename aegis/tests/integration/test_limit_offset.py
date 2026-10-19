@@ -76,3 +76,36 @@ async def test_offset_execution(client):
     assert response_3["execution_id"] not in returned_ids
     assert response_2["execution_id"] in returned_ids
     assert response_1["execution_id"] in returned_ids
+
+@pytest.mark.asyncio
+async def test_status_execution(client):
+    create_response1 = await client.post("/api/v1/executions/",
+                                 json={
+                                     "tenant_id": "tenant-1",
+                                     "task": "analyze the smth",
+                                 },
+                            )
+
+    response_1 = create_response1.json()
+
+    create_response2 = await client.post("/api/v1/executions/",
+                                     json={
+                                         "tenant_id": "tenant-2",
+                                         "task": "analyze the smth",
+                                     },
+                                )
+
+    response_2 = create_response2.json()
+
+    execution_id1 = response_1["execution_id"]
+    execution_id2 = response_2["execution_id"]
+
+    create_response3 = await client.post(f"/api/v1/executions/{execution_id1}/succeed",
+                                         json={"result": "Completed"})
+
+    response_3 = create_response3.json()
+
+    assert response_3["result"] is not None
+    assert response_3["error"] is None
+
+    
