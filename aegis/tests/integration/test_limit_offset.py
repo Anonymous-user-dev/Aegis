@@ -100,12 +100,46 @@ async def test_status_execution(client):
     execution_id1 = response_1["execution_id"]
     execution_id2 = response_2["execution_id"]
 
-    create_response3 = await client.post(f"/api/v1/executions/{execution_id1}/succeed",
-                                         json={"result": "Completed"})
 
-    response_3 = create_response3.json()
+    status_id1 = await client.post(f"/api/v1/executions/{execution_id1}/succeed",
+                                         json={"result": "Analysis fompleted"})
+    
+    status_id2 = await client.post(f"/api/v1/executions/{execution_id2}/fail",
+                                   json={
+                                       "error": "Something failed"
+                                   })
 
-    assert response_3["result"] is not None
+    assert status_id1.status_code == 200
+    assert status_id2.status_code == 200
+
+    response_3 = status_id1.json()
+    response_4 = status_id2.json()
+
+    assert response_3["result"] == "Analysis fompleted"
     assert response_3["error"] is None
+    assert response_3["status"] == "succeeded"
+    assert response_4["result"] is None
+    assert response_4["error"] == "Something failed"
+    assert response_4["status"] == "failed"
+
+    succeeded_response = await client.get(f"/api/v1/executions/?status=succeeded")
+
+    failed_response = await client.get(f"/api/v1/executions/?status=failed")
+
+    assert succeeded_response.status_code == 200
+    assert failed_response.status_code == 200
+
+    succeeded_list = succeeded_response.json()
+    failed_list = failed_response.json()
+
+    succeeded_statuses = [execution["status"] for execution in succeeded_list]
+    failed_statuses = [execution["status"] for execution in failed_list]
+
+    assert all(status == "succeeded" for status in succeeded_statuses)
+    assert all(status == "failed" for status in failed_statuses)
+
+    assert succeeded_list[0]["execution_id"] == execution_id1
+    assert failed_list[0]["execution_id"] == execution_id2
+    
 
     
