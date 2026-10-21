@@ -21,3 +21,9 @@ async def test_unknown_status_returns_validation_error(client):
     response = await client.get("/api/v1/executions/?status=garbage")
 
     assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_exceeded_limit_returns_validation_error(client):
+    response = await client.get("/api/v1/executions/?limit=101")
+
+    assert response.status_code == 422
