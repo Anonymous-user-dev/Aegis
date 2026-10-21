@@ -1,0 +1,2 @@
+class ExecutionNotFound(Exception):
+    pass

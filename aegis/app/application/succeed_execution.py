@@ -2,9 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 from app.domain.execution import Execution
 from app.infra.repository.execution_repository import ExecutionRepository
-
-class ExecutionNotFound(Exception):
-    pass
+from app.application.exceptions import ExecutionNotFound
 
 @dataclass
 class SucceedExecutionCommand:
