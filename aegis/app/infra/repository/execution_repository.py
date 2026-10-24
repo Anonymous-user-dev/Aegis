@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
-
+from app.application.query_types import SortOrder, ExecutionSort
 from app.domain.execution import Execution
 from app.infra.database.mappers import execution_to_domain, execution_to_model
 from app.infra.database.models import ExecutionModel, ExecutionStatus
@@ -29,18 +29,33 @@ class ExecutionRepository:
 
         return execution_to_domain(model)
 
-    async def list(self, limit: int, offset: int, status: ExecutionStatus | None = None) -> list[ExecutionModel]:
+    async def list(self, limit: int, offset: int, status: ExecutionStatus | None = None, sort_order: SortOrder = SortOrder.ASC,    sort_executions: ExecutionSort = ExecutionSort.CREATED_AT) -> list[Execution]:
         stmt = select(ExecutionModel)
 
         if status is not None:
-            stmt = stmt.where(status == ExecutionModel.status)
+            stmt = stmt.where(
+            ExecutionModel.status == status
+        )
 
-        stmt = stmt.limit(limit).offset(offset).order_by(ExecutionModel.created_at.desc(),
-                                                         ExecutionModel.execution_id.desc())
+        if sort_executions == ExecutionSort.CREATED_AT:
+            sort_column = ExecutionModel.created_at
 
-        execute = await self.session.execute(stmt)
+        elif sort_executions == ExecutionSort.UPDATED_AT:
+            sort_column = ExecutionModel.updated_at
 
-        models = execute.scalars().all()
+        if sort_order == SortOrder.ASC:
+            primary_order = sort_column.asc()
+            id_order = ExecutionModel.execution_id.asc()
+
+        else:
+            primary_order = sort_column.desc()
+            id_order = ExecutionModel.execution_id.desc()
+
+        stmt = (stmt.order_by(primary_order, id_order).limit(limit).offset(offset))
+
+        result = await self.session.execute(stmt)
+
+        models = result.scalars().all()
 
         return [
             execution_to_domain(model)

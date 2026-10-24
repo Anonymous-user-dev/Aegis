@@ -1,6 +1,7 @@
 from fastapi import APIRouter,status, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest, SucceedExecutionRequest, FailedExecutionRequest
+from app.application.query_types import SortOrder, ExecutionSort
 from app.api.dependencies import get_session
 from uuid import UUID
 from app.domain.execution import ExecutionStatus, Execution, InvalidExecutionTransition
@@ -61,10 +62,16 @@ async def get_execution_by_id(execution_id: UUID, session: AsyncSession = Depend
     )
 
 @router.get("/", response_model=list[ExecutionResponse], status_code=status.HTTP_200_OK)
-async def get_all_executions(session: AsyncSession = Depends(get_session), execution_status: ExecutionStatus | None = Query(default=None, alias="status"), limit: int = Query(default=10, ge=1, le=100), offset: int = Query(default=0, ge=0)) -> list[ExecutionResponse]:
+async def get_all_executions(session: AsyncSession = Depends(get_session), 
+                             execution_status: ExecutionStatus | None = Query(default=None, alias="status"), 
+                             limit: int = Query(default=10, ge=1, le=100), 
+                             offset: int = Query(default=0, ge=0),
+                             sort_executions: ExecutionSort = Query(default=ExecutionSort.CREATED_AT, alias="sort"),
+                             sort_order: SortOrder = Query(default=SortOrder.ASC, alias="order")
+                             ) -> list[ExecutionResponse]:
     repository = ExecutionRepository(session=session)
 
-    executions = await repository.list(limit=limit, offset=offset, status=execution_status)
+    executions = await repository.list(limit=limit, offset=offset, status=execution_status, sort_order=sort_order, sort_executions=sort_executions)
 
     responses = [
         ExecutionResponse(

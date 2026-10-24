@@ -62,7 +62,7 @@ async def test_offset_execution(client):
 
     response_3 = create_response3.json()
 
-    response = await client.get("/api/v1/executions/?limit=10&offset=1")
+    response = await client.get("/api/v1/executions/?limit=10&offset=1&sort=created_at&order=desc")
 
     response_json = response.json()
 
