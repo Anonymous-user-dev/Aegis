@@ -1,4 +1,4 @@
-from fastapi import APIRouter,status, Depends, HTTPException, Query, Response
+from fastapi import APIRouter,status, Depends, HTTPException, Query, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest, SucceedExecutionRequest, FailedExecutionRequest
 from app.application.query_types import SortOrder, ExecutionSort
@@ -44,7 +44,7 @@ async def create_execution(request: CreateExecutionRequest, response: Response, 
 
 
 @router.get("/{execution_id}", response_model=ExecutionResponse)
-async def get_execution_by_id(execution_id: UUID, session: AsyncSession = Depends(get_session)):
+async def get_execution_by_id(execution_id: UUID, request: Request, response: Response, session: AsyncSession = Depends(get_session)):
     repository = ExecutionRepository(session)
 
     execution = await repository.get_by_id(execution_id)
@@ -53,6 +53,18 @@ async def get_execution_by_id(execution_id: UUID, session: AsyncSession = Depend
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Not found"
         )
+    
+    etag = execution.updated_at.isoformat()
+
+    if_none_match = request.headers.get("If-None-Match")
+
+    if if_none_match == etag:
+        return Response(status_code=status.HTTP_304_NOT_MODIFIED,
+                        headers={
+                            "Etag": etag
+                        })
+        
+    response.headers["Etag"] = etag
 
     return ExecutionResponse(
         execution_id=execution.execution_id,
