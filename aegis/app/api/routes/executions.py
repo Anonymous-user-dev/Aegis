@@ -65,6 +65,7 @@ async def get_execution_by_id(execution_id: UUID, request: Request, response: Re
                         })
         
     response.headers["Etag"] = etag
+    response.headers["Cache-Control"] = "no-store"
 
     return ExecutionResponse(
         execution_id=execution.execution_id,
@@ -102,6 +103,7 @@ async def get_all_executions(session: AsyncSession = Depends(get_session),
         )
         for execution in executions
     ]
+
 
     return responses
 
