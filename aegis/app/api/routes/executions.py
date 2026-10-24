@@ -1,4 +1,4 @@
-from fastapi import APIRouter,status, Depends, HTTPException, Query
+from fastapi import APIRouter,status, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas.execution import ExecutionResponse, CreateExecutionRequest, SucceedExecutionRequest, FailedExecutionRequest
 from app.application.query_types import SortOrder, ExecutionSort
@@ -9,12 +9,12 @@ from app.infra.repository.execution_repository import ExecutionRepository
 from app.application.create_execution import CreateExecution, CreateExecutionCommand
 from app.application.succeed_execution import ExecutionNotFound, SucceedExecution, SucceedExecutionCommand
 from app.application.fail_execution import ExecutionFail, ExecutionFailCommand
+
 router = APIRouter()
 
 
-
 @router.post("/", response_model=ExecutionResponse, status_code=status.HTTP_201_CREATED)
-async def create_execution(request: CreateExecutionRequest, session: AsyncSession = Depends(get_session)):
+async def create_execution(request: CreateExecutionRequest, response: Response, session: AsyncSession = Depends(get_session)):
     repository = ExecutionRepository(session)
 
     use_case = CreateExecution(repository)
@@ -27,6 +27,10 @@ async def create_execution(request: CreateExecutionRequest, session: AsyncSessio
     execution = await use_case.create(command)
 
     await session.commit()
+
+    response.headers["Location"] =(
+            f"/api/v1/executions/{execution.execution_id}"
+    )
 
     return ExecutionResponse(
     execution_id=execution.execution_id,
