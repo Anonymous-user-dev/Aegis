@@ -25,3 +25,5 @@ class RegisterUser:
 
         self.repository.add(user=user)
 
+        return user
+
