@@ -1,10 +1,8 @@
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel
 from uuid import UUID
-from typing import Annotated
 from datetime import datetime
 from app.domain.execution import ExecutionStatus
-
-NonEmptyText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+from app.api.schemas.common import NonEmptyText
 
 class SucceedExecutionRequest(BaseModel):
     result: NonEmptyText
