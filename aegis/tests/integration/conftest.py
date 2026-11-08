@@ -50,7 +50,7 @@ async def client(session):
 
     async with AsyncClient(
         transport=transport,
-        base_url="http://test",
+        base_url="http://test"
     ) as client:
         yield client
 

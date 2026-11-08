@@ -16,7 +16,7 @@ class LoginUser:
         user = await self.repository.get_by_email(command.email)
 
         if user is None:
-            return InvalidCredentials
+            raise InvalidCredentials
 
         if not verify_password(password=command.password, hashed_password=user.hashed_password):
             raise InvalidCredentials
